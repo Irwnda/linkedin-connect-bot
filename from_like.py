@@ -12,8 +12,10 @@ from utils.confirmation import handle_confirmation
 load_dotenv()
 driver = webdriver.Chrome()
 
+
 def open_url(url):
     set_login_state(driver, url)
+
 
 def open_profile(link):
     link.click()
@@ -34,9 +36,11 @@ def open_profile(link):
 
     driver.switch_to.window(original_window)
 
+
 def show_likes():
     driver.find_element(By.XPATH, "//button[@data-reaction-details]").click()
-    like_count_element = driver.find_element(By.CLASS_NAME, 'social-details-social-counts__social-proof-fallback-number')
+    like_count_element = driver.find_element(By.CLASS_NAME,
+                                             'social-details-social-counts__social-proof-fallback-number')
     like_count = int(like_count_element.text)
     visited_account_count = 0
     time.sleep(2)
@@ -68,6 +72,7 @@ def show_likes():
             scrollable_container
         )
         time.sleep(3)
+
 
 def connect():
     time.sleep(2)
@@ -105,10 +110,12 @@ def connect():
             handle_confirmation(driver)
             break
 
+
 def proceed(target_url):
     open_url(target_url)
     show_likes()
     driver.quit()
+
 
 if __name__ == '__main__':
     url = os.getenv("TARGET_URL")

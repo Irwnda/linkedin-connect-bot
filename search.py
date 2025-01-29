@@ -20,29 +20,48 @@ parser.add_argument("--company", type=str,
                     help="The company of connection you're looking for, use comma (..,..) for multiple companies")
 
 
-def handle_location(locations):
-    time.sleep(2)
-    location_filter_button = driver.find_element(By.CSS_SELECTOR, '#searchFilter_geoUrn')
-    location_filter_button.click()
-    location_filter_button_wrapper = location_filter_button.find_element(By.XPATH, '..')
+def handle_filter(selector, filter_values):
+    time.sleep(3)
+    filter_button = driver.find_element(By.CSS_SELECTOR, selector)
+    filter_button.click()
+    filter_button_wrapper = filter_button.find_element(By.XPATH, '..')
 
-    dropdown = location_filter_button_wrapper.find_element(By.XPATH, "preceding-sibling::div")
+    dropdown = filter_button_wrapper.find_element(By.XPATH, "preceding-sibling::div")
     input_text = dropdown.find_element(By.CSS_SELECTOR, 'input[type="text"]')
     filter_button = dropdown.find_elements(By.TAG_NAME, 'button')[2]
 
-    for location in locations:
-        input_text.send_keys(location)
-        time.sleep(1)
+    for filter_value in filter_values:
+        input_text.send_keys(filter_value)
+        time.sleep(2)
         search_result = driver.find_element(By.CLASS_NAME, 'search-typeahead-v2__hit')
         search_result.click()
         input_text.clear()
 
     filter_button.click()
 
+
+def handle_location(locations):
+    handle_filter('#searchFilter_geoUrn', locations)
+
+
+def handle_company(companies):
+    handle_filter('#searchFilter_currentCompany', companies)
+
+
+def get_filtered_account_list_element(main_element, ul_index=0):
+    result_wrapper = main_element.find_elements(By.TAG_NAME, 'ul')[ul_index]
+    results = result_wrapper.find_elements(By.TAG_NAME, 'li')
+
+    if len(results) < 10:
+        return get_filtered_account_list_element(main_element, ul_index + 1)
+
+    return results
+
+
 def connect_all():
     main_element = driver.find_element(By.TAG_NAME, 'main')
-    result_wrapper = main_element.find_element(By.TAG_NAME, 'ul')
-    results = result_wrapper.find_elements(By.TAG_NAME, 'li')
+    results = get_filtered_account_list_element(main_element)
+
     for result in results:
         buttons = result.find_elements(By.TAG_NAME, 'button')
         for button in buttons:
@@ -50,6 +69,7 @@ def connect_all():
             if aria_label and 'connect' in aria_label:
                 button.click()
                 handle_confirmation(driver)
+
 
 def change_page(page):
     parsed_url = urlparse(driver.current_url)
@@ -70,6 +90,7 @@ def change_page(page):
     driver.get(new_url)
     time.sleep(3)
 
+
 def proceed(url):
     driver.get(url)
     set_login_state(driver, url)
@@ -77,15 +98,19 @@ def proceed(url):
     if args.location is not None:
         handle_location(args.location.split(','))
 
+    if args.company is not None:
+        handle_company(args.company.split(','))
+
     time.sleep(3)
-    current_page = 2
     connect_all()
+    current_page = 2
 
     while current_page < 10:
         change_page(current_page)
 
         connect_all()
         current_page += 1
+
 
 if __name__ == '__main__':
     args = parser.parse_args()
