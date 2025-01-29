@@ -51,6 +51,25 @@ def connect_all():
                 button.click()
                 handle_confirmation(driver)
 
+def change_page(page):
+    parsed_url = urlparse(driver.current_url)
+    query_params = parse_qs(parsed_url.query)
+
+    query_params['page'] = [str(page)]
+    new_query_string = urlencode(query_params, doseq=True)
+
+    new_url = urlunparse((
+        parsed_url.scheme,
+        parsed_url.netloc,
+        parsed_url.path,
+        parsed_url.params,
+        new_query_string,
+        parsed_url.fragment
+    ))
+
+    driver.get(new_url)
+    time.sleep(3)
+
 def proceed(url):
     driver.get(url)
     set_login_state(driver, url)
@@ -63,23 +82,7 @@ def proceed(url):
     connect_all()
 
     while current_page < 10:
-        parsed_url = urlparse(driver.current_url)
-        query_params = parse_qs(parsed_url.query)
-
-        query_params['page'] = [str(current_page)]
-        new_query_string = urlencode(query_params, doseq=True)
-
-        new_url = urlunparse((
-            parsed_url.scheme,
-            parsed_url.netloc,
-            parsed_url.path,
-            parsed_url.params,
-            new_query_string,
-            parsed_url.fragment
-        ))
-
-        driver.get(new_url)
-        time.sleep(3)
+        change_page(current_page)
 
         connect_all()
         current_page += 1
@@ -88,5 +91,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     search_url = 'https://www.linkedin.com/search/results/people/?network=%5B%22S%22%2C%22O%22%5D'
     if args.keyword:
-        search_url += '&keyword=' + args.keyword
+        search_url += '&keywords=' + args.keyword
     proceed(search_url)

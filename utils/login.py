@@ -15,11 +15,12 @@ def login_linkedin(driver):
     driver.find_element(By.XPATH, "//button[@type='submit']").click()
 
 def set_login_state(driver, url):
+    driver.get("https://linkedin.com")
     cookie = os.environ["LI_AT"]
     if bool(cookie):
         driver.add_cookie({"name": "li_at",
                        "value": cookie})
-        driver.refresh()
     else:
         login_linkedin(driver)
-        driver.get(url)
+
+    driver.get(url)

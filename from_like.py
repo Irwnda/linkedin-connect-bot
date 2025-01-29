@@ -13,7 +13,6 @@ load_dotenv()
 driver = webdriver.Chrome()
 
 def open_url(url):
-    driver.get(url)
     set_login_state(driver, url)
 
 def open_profile(link):
