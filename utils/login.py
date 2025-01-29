@@ -16,9 +16,10 @@ def login_linkedin(driver):
 
 def set_login_state(driver, url):
     cookie = os.environ["LI_AT"]
-    if cookie is not None:
+    if bool(cookie):
         driver.add_cookie({"name": "li_at",
-                       "value": os.environ["LI_AT"]})
+                       "value": cookie})
         driver.refresh()
     else:
         login_linkedin(driver)
+        driver.get(url)
