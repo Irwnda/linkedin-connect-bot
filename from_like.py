@@ -6,35 +6,15 @@ from selenium import webdriver
 from selenium.common import ElementNotInteractableException, StaleElementReferenceException, NoSuchElementException, \
     NoSuchWindowException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
-
+from utils.login import set_login_state
+from utils.confirmation import handle_confirmation
 
 load_dotenv()
 driver = webdriver.Chrome()
 
-def login_linkedin():
-    driver.get("https://linkedin.com/login")
-    username = driver.find_element(By.XPATH, "//input[@name='session_key']")
-    password = driver.find_element(By.XPATH, "//input[@name='session_password']")
-
-    username.send_keys(os.environ["LINKEDIN_EMAIL"])
-    password.send_keys(os.environ["LINKEDIN_PASSWORD"])
-
-    driver.find_element(By.XPATH, "//button[@type='submit']").click()
-
-def set_login_state(url):
-    cookie = os.environ["LI_AT"]
-    if cookie is not None:
-        driver.add_cookie({"name": "li_at",
-                       "value": os.environ["LI_AT"]})
-        driver.refresh()
-    else:
-        login_linkedin(url)
-
 def open_url(url):
     driver.get(url)
-    set_login_state(url)
+    set_login_state(driver, url)
 
 def open_profile(link):
     link.click()
@@ -90,13 +70,6 @@ def show_likes():
         )
         time.sleep(3)
 
-def check_confirmation():
-    time.sleep(2)
-    modal_buttons = driver.find_element(By.CLASS_NAME, 'send-invite').find_elements(By.TAG_NAME, 'button')
-    for button in modal_buttons:
-        if button.get_attribute('aria-label') == 'Send without a note':
-            button.click()
-
 def connect():
     time.sleep(2)
     more_button = driver.find_elements(By.XPATH, "//button[@aria-label='More actions']")[1]
@@ -113,7 +86,7 @@ def connect():
 
     if connect_button is not None:
         connect_button.click()
-        check_confirmation()
+        handle_confirmation(driver)
         return
     else:
         more_button.click()
@@ -125,12 +98,12 @@ def connect():
         try:
             if 'connect' in div_element.get_attribute('aria-label'):
                 div_element.click()
-                check_confirmation()
+                handle_confirmation(driver)
                 break
         except ElementNotInteractableException:
             more_button.click()
             div_element.click()
-            check_confirmation()
+            handle_confirmation(driver)
             break
 
 def proceed(target_url):
