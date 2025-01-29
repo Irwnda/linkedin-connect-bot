@@ -98,21 +98,18 @@ def check_confirmation():
             button.click()
 
 def connect():
-    action_buttons_wrapper = WebDriverWait(driver, 5).until(
-        EC.visibility_of_element_located((By.CLASS_NAME, "umjiWHzhkMWxuVrcgedbAbMsQbYPbDdZ"))
-    )
+    time.sleep(2)
+    more_button = driver.find_elements(By.XPATH, "//button[@aria-label='More actions']")[1]
+    action_buttons_wrapper = more_button.find_element(By.XPATH, '../..')
     action_buttons = action_buttons_wrapper.find_elements(By.TAG_NAME, "button")
 
     connect_button = None
-    more_button = None
     for action_button in action_buttons:
         if action_button.text == "Pending":
             return
         if action_button.text == "Connect":
             connect_button = action_button
             break
-        if action_button.text == "More":
-            more_button = action_button
 
     if connect_button is not None:
         connect_button.click()
@@ -121,7 +118,7 @@ def connect():
     else:
         more_button.click()
 
-    dropdown = driver.find_elements(By.CLASS_NAME, 'UNBVgWooMfixbYCCrteHxZUAkbEaIuMMo')[1]
+    dropdown = more_button.find_element(By.XPATH, "following-sibling::div")
     li_elements = dropdown.find_elements(By.TAG_NAME, 'li')
     for li_element in li_elements:
         div_element = li_element.find_element(By.TAG_NAME, 'div')
